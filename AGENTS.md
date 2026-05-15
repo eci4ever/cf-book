@@ -8,6 +8,7 @@ This project uses:
 - **shadcn/ui** for UI components
 - **Cloudflare D1** as the database
 - **Drizzle ORM** for database queries
+- **Better Auth** for authentication
 - **TanStack Query** for mutations
 - **pnpm** as the only package manager
 
@@ -234,6 +235,12 @@ Do not show:
 ---
 
 ## 11. Auth and Permissions
+
+This project will use **Better Auth** for authentication.
+
+Use Better Auth patterns for sign up, login, logout, sessions, and current-user checks.
+
+Do not create a custom authentication system unless I ask.
 
 For user-specific data:
 
