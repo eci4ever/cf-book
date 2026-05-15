@@ -9,5 +9,12 @@
 	"observability": {
 		"enabled": true
 	},
-	"upload_source_maps": true
+	"upload_source_maps": true,
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "cf-book",
+			"database_id": "714dd918-08ef-4d65-bd1a-9e3443e35da8"
+		}
+	]
 }
