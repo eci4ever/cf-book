@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { asc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { createDb } from "@/db";
@@ -27,7 +27,7 @@ export const deleteBookInputSchema = z.object({
 });
 
 export async function listBooks() {
-  return db.select().from(booksTable).orderBy(asc(booksTable.id));
+  return db.select().from(booksTable).orderBy(desc(booksTable.id));
 }
 
 export async function insertBook(data: z.infer<typeof bookInputSchema>) {

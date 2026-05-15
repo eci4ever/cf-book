@@ -1,13 +1,38 @@
 import {
   type ComponentProps,
+  type ReactNode,
   type TdHTMLAttributes,
   type ThHTMLAttributes,
-  useMemo,
   useState,
-  useTransition,
 } from "react";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { BookOpen, Pencil, Plus, Save, Search, Trash2, X } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import {
+  type ColumnDef,
+  type PaginationState,
+  type SortingState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
+  AlertTriangle,
+  ArrowUpDown,
+  BookOpen,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
+  Pencil,
+  Plus,
+  Save,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,11 +45,15 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/book/")({
-  loader: () => getBooks(),
   component: BooksPage,
 });
 
 type Book = Awaited<ReturnType<typeof getBooks>>[number];
+type BookMutationInput = BookForm & {
+  id?: number;
+};
+
+const booksQueryKey = ["books"] as const;
 
 type BookForm = {
   title: string;
@@ -39,27 +68,164 @@ const emptyForm: BookForm = {
 };
 
 function BooksPage() {
-  const router = useRouter();
-  const books = Route.useLoaderData();
+  const queryClient = useQueryClient();
+  const {
+    data: books = [],
+    error: booksError,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: booksQueryKey,
+    queryFn: () => getBooks(),
+  });
   const [form, setForm] = useState<BookForm>(emptyForm);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
+  const [pendingDeleteBook, setPendingDeleteBook] = useState<Book | null>(null);
   const [query, setQuery] = useState("");
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
 
-  const filteredBooks = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+  const saveBookMutation = useMutation({
+    mutationFn: async (data: BookMutationInput) => {
+      if (data.id) {
+        await updateBook({
+          data: {
+            id: data.id,
+            title: data.title,
+            author: data.author,
+            isbn: data.isbn,
+          },
+        });
 
-    if (!normalizedQuery) {
-      return books;
-    }
+        return "Book updated.";
+      }
 
-    return books.filter((book) => {
-      return [book.title, book.author, book.isbn].some((value) =>
-        value.toLowerCase().includes(normalizedQuery),
-      );
-    });
-  }, [books, query]);
+      await createBook({
+        data: {
+          title: data.title,
+          author: data.author,
+          isbn: data.isbn,
+        },
+      });
+
+      return "Book created.";
+    },
+    onSuccess: async (message) => {
+      resetForm();
+      await queryClient.invalidateQueries({ queryKey: booksQueryKey });
+      toast.success(message);
+    },
+    onError: (cause) => {
+      const message = getErrorMessage(cause);
+
+      setError(message);
+      toast.error(message);
+    },
+  });
+
+  const deleteBookMutation = useMutation({
+    mutationFn: async (book: Book) => {
+      await deleteBook({ data: { id: book.id } });
+
+      return book;
+    },
+    onSuccess: async (book) => {
+      if (editingBook?.id === book.id) {
+        resetForm();
+      }
+
+      setPendingDeleteBook(null);
+      await queryClient.invalidateQueries({ queryKey: booksQueryKey });
+      toast.success("Book deleted.");
+    },
+    onError: (cause) => {
+      const message = getErrorMessage(cause);
+
+      setError(message);
+      toast.error(message);
+    },
+  });
+
+  const isMutating = saveBookMutation.isPending || deleteBookMutation.isPending;
+
+  const columns: ColumnDef<Book>[] = [
+    {
+      id: "no",
+      header: "No",
+      enableGlobalFilter: false,
+      enableSorting: false,
+    },
+    {
+      accessorKey: "title",
+      header: "Title",
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.title}</span>
+      ),
+    },
+    {
+      accessorKey: "author",
+      header: "Author",
+    },
+    {
+      accessorKey: "isbn",
+      header: "ISBN",
+      cell: ({ row }) => (
+        <span className="font-mono text-xs">{row.original.isbn}</span>
+      ),
+    },
+    {
+      id: "actions",
+      enableGlobalFilter: false,
+      enableSorting: false,
+      header: () => <span className="block text-right">Actions</span>,
+      cell: ({ row }) => (
+        <div className="flex justify-end gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => editBook(row.original)}
+            disabled={isMutating}
+            aria-label={`Edit ${row.original.title}`}
+          >
+            <Pencil className="size-4" aria-hidden="true" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => handleDeleteRequest(row.original)}
+            disabled={isMutating}
+            aria-label={`Delete ${row.original.title}`}
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <Trash2 className="size-4" aria-hidden="true" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const table = useReactTable({
+    data: books,
+    columns,
+    state: {
+      globalFilter: query,
+      pagination,
+      sorting,
+    },
+    onGlobalFilterChange: setQuery,
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
 
   function updateForm(field: keyof BookForm, value: string) {
     setForm((current) => ({
@@ -84,27 +250,6 @@ function BooksPage() {
     setError(null);
   }
 
-  function runMutation(mutation: () => Promise<void>, successMessage: string) {
-    setError(null);
-    startTransition(() => {
-      void (async () => {
-        try {
-          await mutation();
-          await router.invalidate();
-          toast.success(successMessage);
-        } catch (cause) {
-          const message =
-            cause instanceof Error
-              ? cause.message
-              : "Unable to save the book changes.";
-
-          setError(message);
-          toast.error(message);
-        }
-      })();
-    });
-  }
-
   const handleSubmit: ComponentProps<"form">["onSubmit"] = (event) => {
     event.preventDefault();
 
@@ -114,46 +259,33 @@ function BooksPage() {
       isbn: form.isbn.trim(),
     };
 
-    const isEditing = Boolean(editingBook);
-
-    runMutation(
-      async () => {
-        if (editingBook) {
-          await updateBook({
-            data: {
-              id: editingBook.id,
-              ...payload,
-            },
-          });
-        } else {
-          await createBook({ data: payload });
-        }
-
-        resetForm();
-      },
-      isEditing ? "Book updated." : "Book created.",
-    );
+    setError(null);
+    saveBookMutation.mutate({
+      id: editingBook?.id,
+      ...payload,
+    });
   };
 
-  function handleDelete(book: Book) {
-    runMutation(
-      async () => {
-        await deleteBook({ data: { id: book.id } });
+  function handleDeleteRequest(book: Book) {
+    setPendingDeleteBook(book);
+    setError(null);
+  }
 
-        if (editingBook?.id === book.id) {
-          resetForm();
-        }
-      },
-      "Book deleted.",
-    );
+  function handleDeleteConfirm() {
+    if (!pendingDeleteBook) {
+      return;
+    }
+
+    setError(null);
+    deleteBookMutation.mutate(pendingDeleteBook);
   }
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[360px_minmax(0,1fr)] lg:px-8">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
         <section className="rounded-lg border bg-card text-card-foreground shadow-sm">
-          <form onSubmit={handleSubmit} className="flex h-full flex-col">
-            <div className="border-b px-5 py-4">
+          <form onSubmit={handleSubmit}>
+            <div className="flex flex-col gap-4 border-b px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
                 <span className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
                   <BookOpen className="size-4" aria-hidden="true" />
@@ -167,9 +299,20 @@ function BooksPage() {
                   </p>
                 </div>
               </div>
+              {editingBook ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isMutating}
+                  onClick={resetForm}
+                >
+                  <X className="size-4" aria-hidden="true" />
+                  Cancel
+                </Button>
+              ) : null}
             </div>
 
-            <div className="grid gap-4 px-5 py-5">
+            <div className="grid gap-4 px-5 py-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,0.9fr)_auto] md:items-end">
               <Field
                 id="title"
                 label="Title"
@@ -192,32 +335,23 @@ function BooksPage() {
                 placeholder="978-0000000000"
               />
 
-              {error ? (
-                <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {error}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="mt-auto flex items-center gap-2 border-t px-5 py-4">
-              <Button type="submit" disabled={isPending} className="flex-1">
+              <Button type="submit" disabled={isMutating} className="md:self-end">
                 {editingBook ? (
                   <Save className="size-4" aria-hidden="true" />
                 ) : (
                   <Plus className="size-4" aria-hidden="true" />
                 )}
-                {editingBook ? "Save" : "Create"}
+                {saveBookMutation.isPending
+                  ? "Saving"
+                  : editingBook
+                    ? "Save"
+                    : "Create"}
               </Button>
-              {editingBook ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={isPending}
-                  onClick={resetForm}
-                >
-                  <X className="size-4" aria-hidden="true" />
-                  Cancel
-                </Button>
+
+              {error ? (
+                <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive md:col-span-4">
+                  {error}
+                </div>
               ) : null}
             </div>
           </form>
@@ -228,7 +362,12 @@ function BooksPage() {
             <div>
               <h2 className="text-lg font-semibold">Books</h2>
               <p className="text-sm text-muted-foreground">
-                {books.length} {books.length === 1 ? "record" : "records"}
+                {isLoading
+                  ? "Loading records"
+                  : `${table.getFilteredRowModel().rows.length} of ${books.length} ${
+                      books.length === 1 ? "record" : "records"
+                    }`}
+                {isFetching && !isLoading ? " · Refreshing" : null}
               </p>
             </div>
             <label className="relative block w-full sm:w-72">
@@ -250,63 +389,79 @@ function BooksPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-180 caption-bottom text-sm">
               <thead className="border-b bg-muted/40 text-muted-foreground">
-                <tr>
-                  <TableHead className="w-16">ID</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Author</TableHead>
-                  <TableHead>ISBN</TableHead>
-                  <TableHead className="w-28 text-right">Actions</TableHead>
-                </tr>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        className={getTableColumnClassName(header.column.id)}
+                      >
+                        {header.isPlaceholder ? null : (
+                          <TableHeaderContent
+                            canSort={header.column.getCanSort()}
+                            onSort={header.column.getToggleSortingHandler()}
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                          </TableHeaderContent>
+                        )}
+                      </TableHead>
+                    ))}
+                  </tr>
+                ))}
               </thead>
               <tbody>
-                {filteredBooks.length > 0 ? (
-                  filteredBooks.map((book) => (
+                {isLoading ? (
+                  <tr>
+                    <td
+                      colSpan={table.getAllLeafColumns().length}
+                      className="h-32 px-4 text-center text-sm text-muted-foreground"
+                    >
+                      Loading books...
+                    </td>
+                  </tr>
+                ) : booksError ? (
+                  <tr>
+                    <td
+                      colSpan={table.getAllLeafColumns().length}
+                      className="h-32 px-4 text-center text-sm text-destructive"
+                    >
+                      {getErrorMessage(booksError)}
+                    </td>
+                  </tr>
+                ) : table.getRowModel().rows.length > 0 ? (
+                  table.getRowModel().rows.map((row, rowIndex) => (
                     <tr
-                      key={book.id}
+                      key={row.id}
                       className={cn(
                         "border-b transition-colors last:border-b-0 hover:bg-muted/40",
-                        editingBook?.id === book.id && "bg-muted/60",
+                        editingBook?.id === row.original.id && "bg-muted/60",
                       )}
                     >
-                      <TableCell className="font-mono text-muted-foreground">
-                        {book.id}
-                      </TableCell>
-                      <TableCell className="font-medium">{book.title}</TableCell>
-                      <TableCell>{book.author}</TableCell>
-                      <TableCell className="font-mono text-xs">
-                        {book.isbn}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => editBook(book)}
-                            disabled={isPending}
-                            aria-label={`Edit ${book.title}`}
-                          >
-                            <Pencil className="size-4" aria-hidden="true" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(book)}
-                            disabled={isPending}
-                            aria-label={`Delete ${book.title}`}
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                          >
-                            <Trash2 className="size-4" aria-hidden="true" />
-                          </Button>
-                        </div>
-                      </TableCell>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                          key={cell.id}
+                          className={getTableColumnClassName(cell.column.id)}
+                        >
+                          {cell.column.id === "no"
+                            ? table.getState().pagination.pageIndex *
+                                table.getState().pagination.pageSize +
+                              rowIndex +
+                              1
+                            : flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                        </TableCell>
+                      ))}
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={table.getAllLeafColumns().length}
                       className="h-32 px-4 text-center text-sm text-muted-foreground"
                     >
                       No books found.
@@ -316,8 +471,121 @@ function BooksPage() {
               </tbody>
             </table>
           </div>
+
+          <div className="flex flex-col gap-3 border-t px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm text-muted-foreground">
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {Math.max(table.getPageCount(), 1)}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                Rows
+                <select
+                  value={table.getState().pagination.pageSize}
+                  onChange={(event) => table.setPageSize(Number(event.target.value))}
+                  className="h-8 rounded-md border border-input bg-background px-2 text-sm text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {[10, 25, 50].map((pageSize) => (
+                    <option key={pageSize} value={pageSize}>
+                      {pageSize}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  disabled={!table.getCanPreviousPage() || isLoading}
+                  onClick={() => table.setPageIndex(0)}
+                  aria-label="First page"
+                >
+                  <ChevronsLeft className="size-4" aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  disabled={!table.getCanPreviousPage() || isLoading}
+                  onClick={() => table.previousPage()}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="size-4" aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  disabled={!table.getCanNextPage() || isLoading}
+                  onClick={() => table.nextPage()}
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="size-4" aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  disabled={!table.getCanNextPage() || isLoading}
+                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                  aria-label="Last page"
+                >
+                  <ChevronsRight className="size-4" aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
+
+      {pendingDeleteBook ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="delete-book-title"
+          aria-describedby="delete-book-description"
+        >
+          <div className="w-full max-w-md rounded-lg border bg-card text-card-foreground shadow-lg">
+            <div className="flex gap-3 px-5 py-5">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-destructive/10 text-destructive">
+                <AlertTriangle className="size-5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <h2 id="delete-book-title" className="text-base font-semibold">
+                  Delete book
+                </h2>
+                <p
+                  id="delete-book-description"
+                  className="mt-1 text-sm text-muted-foreground"
+                >
+                  This will permanently remove "{pendingDeleteBook.title}".
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t px-5 py-4">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isMutating}
+                onClick={() => setPendingDeleteBook(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isMutating}
+                onClick={handleDeleteConfirm}
+              >
+                <Trash2 className="size-4" aria-hidden="true" />
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
@@ -369,4 +637,47 @@ function TableCell({
   ...props
 }: TdHTMLAttributes<HTMLTableCellElement>) {
   return <td className={cn("p-4 align-middle", className)} {...props} />;
+}
+
+function TableHeaderContent({
+  canSort,
+  children,
+  onSort,
+}: {
+  canSort: boolean;
+  children: ReactNode;
+  onSort?: ComponentProps<"button">["onClick"];
+}) {
+  if (!canSort) {
+    return children;
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onSort}
+      className="-ml-2 inline-flex h-8 items-center gap-1 rounded-md px-2 text-left font-medium transition hover:bg-muted hover:text-foreground"
+    >
+      {children}
+      <ArrowUpDown className="size-3.5" aria-hidden="true" />
+    </button>
+  );
+}
+
+function getTableColumnClassName(columnId: string) {
+  if (columnId === "no") {
+    return "w-16";
+  }
+
+  if (columnId === "actions") {
+    return "w-28 text-right";
+  }
+
+  return undefined;
+}
+
+function getErrorMessage(cause: unknown) {
+  return cause instanceof Error
+    ? cause.message
+    : "Unable to save the book changes.";
 }
