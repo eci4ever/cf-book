@@ -23,9 +23,11 @@ export function SignupForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">Create your account</CardTitle>
-          <CardDescription>
+        <CardHeader className="gap-1.5 text-center">
+          <CardTitle className="text-xl font-semibold leading-tight">
+            Create your account
+          </CardTitle>
+          <CardDescription className="text-sm leading-6">
             Enter your email below to create your account
           </CardDescription>
         </CardHeader>
@@ -63,7 +65,9 @@ export function SignupForm({
                 </FieldDescription>
               </Field>
               <Field>
-                <Button type="button">Create Account</Button>
+                <Button type="button" className="font-medium">
+                  Create Account
+                </Button>
                 <FieldDescription className="text-center">
                   Already have an account? <Link to="/login">Sign in</Link>
                 </FieldDescription>

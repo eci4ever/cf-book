@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Github, Feather, Search, Plus } from 'lucide-react';
+import { Github, GalleryVerticalEnd, Search, Plus } from 'lucide-react';
 
 export const Route = createFileRoute('/')({ component: Home })
 
@@ -13,12 +13,18 @@ function Home() {
         {/* Left: Logo + Nav Links */}
         <div className="flex items-center gap-8">
           {/* Logo */}
-          <a href="#" className="flex items-center">
-            <Feather className="h-5 w-5 -rotate-45 text-foreground" strokeWidth={2.5} />
-          </a>
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-sm font-semibold leading-none text-foreground"
+          >
+            <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <GalleryVerticalEnd className="size-4" aria-hidden="true" />
+            </span>
+            <span>ADTEC JTM.</span>
+          </Link>
 
           {/* Nav Links */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden items-center gap-6 md:flex">
             <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
               Docs
             </a>
@@ -96,7 +102,7 @@ function Home() {
       </nav>
 
       {/* Hero Section */}
-      <main className="flex flex-col items-center justify-center px-4 pt-32 pb-20 text-center">
+      <main className="flex flex-col items-center justify-center px-4 pb-16 pt-28 text-center">
         {/* Badge */}
         <a
           href="#"
@@ -117,29 +123,29 @@ function Home() {
         </a>
 
         {/* Heading */}
-        <h1 className="mb-6 text-5xl font-bold tracking-tight text-foreground md:text-6xl">
+        <h1 className="mb-5 max-w-3xl text-4xl font-semibold leading-tight text-foreground">
           Building Blocks for the Web
         </h1>
 
         {/* Subheading */}
-        <p className="mb-10 max-w-2xl text-xl font-normal leading-relaxed text-muted-foreground md:text-2xl">
+        <p className="mb-8 max-w-2xl text-base font-normal leading-7 text-muted-foreground">
           Clean, modern building blocks.
           <br className="hidden md:block" />
           Works with all React frameworks. Open Source.
         </p>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-center gap-4">
+        <div className="flex flex-col items-center gap-3 sm:flex-row">
           <Button
             size="lg"
-            className="h-12 rounded-xl px-6 text-base font-medium"
+            className="px-4 font-medium"
           >
             Browse Blocks
           </Button>
           <Button
             variant="ghost"
             size="lg"
-            className="h-12 rounded-xl px-6 text-base font-medium"
+            className="px-4 font-medium"
           >
             View Components
           </Button>
