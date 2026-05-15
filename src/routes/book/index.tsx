@@ -8,6 +8,7 @@ import {
 } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { BookOpen, Pencil, Plus, Save, Search, Trash2, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -83,19 +84,22 @@ function BooksPage() {
     setError(null);
   }
 
-  function runMutation(mutation: () => Promise<void>) {
+  function runMutation(mutation: () => Promise<void>, successMessage: string) {
     setError(null);
     startTransition(() => {
       void (async () => {
         try {
           await mutation();
           await router.invalidate();
+          toast.success(successMessage);
         } catch (cause) {
-          setError(
+          const message =
             cause instanceof Error
               ? cause.message
-              : "Unable to save the book changes.",
-          );
+              : "Unable to save the book changes.";
+
+          setError(message);
+          toast.error(message);
         }
       })();
     });
@@ -110,30 +114,38 @@ function BooksPage() {
       isbn: form.isbn.trim(),
     };
 
-    runMutation(async () => {
-      if (editingBook) {
-        await updateBook({
-          data: {
-            id: editingBook.id,
-            ...payload,
-          },
-        });
-      } else {
-        await createBook({ data: payload });
-      }
+    const isEditing = Boolean(editingBook);
 
-      resetForm();
-    });
+    runMutation(
+      async () => {
+        if (editingBook) {
+          await updateBook({
+            data: {
+              id: editingBook.id,
+              ...payload,
+            },
+          });
+        } else {
+          await createBook({ data: payload });
+        }
+
+        resetForm();
+      },
+      isEditing ? "Book updated." : "Book created.",
+    );
   };
 
   function handleDelete(book: Book) {
-    runMutation(async () => {
-      await deleteBook({ data: { id: book.id } });
+    runMutation(
+      async () => {
+        await deleteBook({ data: { id: book.id } });
 
-      if (editingBook?.id === book.id) {
-        resetForm();
-      }
-    });
+        if (editingBook?.id === book.id) {
+          resetForm();
+        }
+      },
+      "Book deleted.",
+    );
   }
 
   return (
