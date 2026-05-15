@@ -31,7 +31,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <div>
             <FieldGroup>
               <Field>
                 <Button variant="outline" type="button">
@@ -78,13 +78,13 @@ export function LoginForm({
                 <Input id="password" type="password" required />
               </Field>
               <Field>
-                <Button type="submit">Login</Button>
+                <Button type="button">Login</Button>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <Link to="/signup">Sign up</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>
-          </form>
+          </div>
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">

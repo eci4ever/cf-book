@@ -7,34 +7,34 @@ export const Route = createFileRoute('/')({ component: Home })
 
 function Home() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
       <nav className="flex items-center justify-between px-6 py-4">
         {/* Left: Logo + Nav Links */}
         <div className="flex items-center gap-8">
           {/* Logo */}
           <a href="#" className="flex items-center">
-            <Feather className="h-5 w-5 text-black -rotate-45" strokeWidth={2.5} />
+            <Feather className="h-5 w-5 -rotate-45 text-foreground" strokeWidth={2.5} />
           </a>
 
           {/* Nav Links */}
           <div className="hidden md:flex items-center gap-6">
-            <a href="#" className="text-sm font-medium text-black hover:text-gray-600 transition-colors">
+            <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
               Docs
             </a>
-            <a href="#" className="text-sm font-medium text-black hover:text-gray-600 transition-colors">
+            <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
               Components
             </a>
-            <a href="#" className="text-sm font-medium text-black hover:text-gray-600 transition-colors">
+            <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
               Blocks
             </a>
-            <a href="#" className="text-sm font-medium text-black hover:text-gray-600 transition-colors">
+            <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
               Charts
             </a>
-            <a href="#" className="text-sm font-medium text-black hover:text-gray-600 transition-colors">
+            <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
               Directory
             </a>
-            <a href="#" className="text-sm font-medium text-black hover:text-gray-600 transition-colors">
+            <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
               Create
             </a>
           </div>
@@ -44,31 +44,31 @@ function Home() {
         <div className="flex items-center gap-4">
           {/* Search */}
           <div className="relative hidden sm:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search..."
-              className="w-48 pl-9 pr-4 py-2 h-9 rounded-full border-gray-200 bg-transparent text-sm placeholder:text-gray-400 focus-visible:ring-gray-300"
+              className="h-9 w-48 rounded-full bg-transparent py-2 pl-9 pr-4 text-sm"
             />
           </div>
 
           {/* Divider */}
-          <div className="hidden sm:block w-px h-6 bg-gray-200" />
+          <div className="hidden h-6 w-px bg-border sm:block" />
 
           {/* GitHub Stars */}
           <a
             href="#"
-            className="hidden sm:flex items-center gap-2 text-sm font-medium text-black hover:text-gray-600 transition-colors"
+            className="hidden items-center gap-2 text-sm font-medium text-foreground transition-colors hover:text-muted-foreground sm:flex"
           >
             <Github className="h-4 w-4" />
             <span>114k</span>
           </a>
 
           {/* Divider */}
-          <div className="hidden sm:block w-px h-6 bg-gray-200" />
+          <div className="hidden h-6 w-px bg-border sm:block" />
 
           {/* Theme Toggle (placeholder - moon icon) */}
-          <button className="p-1 hover:bg-gray-100 rounded-md transition-colors">
+          <button className="rounded-md p-1 transition-colors hover:bg-muted">
             <svg
               className="h-4 w-4"
               viewBox="0 0 24 24"
@@ -83,12 +83,14 @@ function Home() {
           </button>
 
           {/* Divider */}
-          <div className="hidden sm:block w-px h-6 bg-gray-200" />
+          <div className="hidden h-6 w-px bg-border sm:block" />
 
           {/* New Button */}
-          <Button className="rounded-lg bg-black text-white hover:bg-gray-800 px-4 h-9 text-sm font-medium gap-1.5">
-            <Plus className="h-4 w-4" />
-            <Link to="/login">Login</Link>
+          <Button asChild className="h-9 gap-1.5 px-4 text-sm font-medium">
+            <Link to="/login">
+              <Plus className="h-4 w-4" />
+              Login
+            </Link>
           </Button>
         </div>
       </nav>
@@ -98,7 +100,7 @@ function Home() {
         {/* Badge */}
         <a
           href="#"
-          className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-4 py-1.5 text-sm font-medium text-black hover:bg-gray-200 transition-colors mb-8"
+          className="mb-8 inline-flex items-center gap-1.5 rounded-full bg-muted px-4 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
         >
           New preset commands
           <svg
@@ -115,12 +117,12 @@ function Home() {
         </a>
 
         {/* Heading */}
-        <h1 className="text-5xl md:text-6xl font-bold text-black tracking-tight mb-6">
+        <h1 className="mb-6 text-5xl font-bold tracking-tight text-foreground md:text-6xl">
           Building Blocks for the Web
         </h1>
 
         {/* Subheading */}
-        <p className="text-xl md:text-2xl text-black font-normal leading-relaxed max-w-2xl mb-10">
+        <p className="mb-10 max-w-2xl text-xl font-normal leading-relaxed text-muted-foreground md:text-2xl">
           Clean, modern building blocks.
           <br className="hidden md:block" />
           Works with all React frameworks. Open Source.
@@ -130,14 +132,14 @@ function Home() {
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <Button
             size="lg"
-            className="rounded-xl bg-black text-white hover:bg-gray-800 px-6 h-12 text-base font-medium"
+            className="h-12 rounded-xl px-6 text-base font-medium"
           >
             Browse Blocks
           </Button>
           <Button
             variant="ghost"
             size="lg"
-            className="rounded-xl text-black hover:bg-gray-100 px-6 h-12 text-base font-medium"
+            className="h-12 rounded-xl px-6 text-base font-medium"
           >
             View Components
           </Button>

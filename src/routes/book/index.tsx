@@ -36,6 +36,7 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   createBook,
   deleteBook,
@@ -376,10 +377,10 @@ function BooksPage() {
                 className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden="true"
               />
-              <input
+              <Input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="h-9 pl-9"
                 placeholder="Search books"
                 type="search"
               />
@@ -428,7 +429,7 @@ function BooksPage() {
                       colSpan={table.getAllLeafColumns().length}
                       className="h-32 px-4 text-center text-sm text-destructive"
                     >
-                      {getErrorMessage(booksError)}
+                      {getErrorMessage(booksError, "Unable to load books.")}
                     </td>
                   </tr>
                 ) : table.getRowModel().rows.length > 0 ? (
@@ -608,11 +609,11 @@ function Field({
       <label htmlFor={id} className="text-sm font-medium leading-none">
         {label}
       </label>
-      <input
+      <Input
         id={id}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-9 rounded-md border border-input bg-background px-3 text-sm outline-none transition placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="h-9"
         placeholder={placeholder}
         required
       />
@@ -676,8 +677,22 @@ function getTableColumnClassName(columnId: string) {
   return undefined;
 }
 
-function getErrorMessage(cause: unknown) {
-  return cause instanceof Error
-    ? cause.message
-    : "Unable to save the book changes.";
+const safeErrorMessages = new Set([
+  "Title is required.",
+  "Author is required.",
+  "ISBN is required.",
+  "A valid book ID is required.",
+]);
+
+function getErrorMessage(
+  cause: unknown,
+  fallback = "Unable to save the book changes.",
+) {
+  if (!(cause instanceof Error)) {
+    return fallback;
+  }
+
+  const message = cause.message.trim();
+
+  return safeErrorMessages.has(message) ? message : fallback;
 }
