@@ -14,7 +14,7 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { getCurrentSession } from '#/feature/auth/session'
+import { getCurrentSession } from '#/lib/session'
 import { Button } from '#/components/ui/button'
 import { LogOut } from 'lucide-react'
 import { authClient } from '#/lib/auth-client'

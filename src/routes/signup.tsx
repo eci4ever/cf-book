@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { SignupForm } from '@/components/auth/signup-form';
+import { SignupForm } from '#/components/signup-form';
 import { GalleryVerticalEnd } from 'lucide-react';
 
 export const Route = createFileRoute('/signup')({
