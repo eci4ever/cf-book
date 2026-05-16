@@ -28,11 +28,7 @@ const data = {
       items: [
         {
           title: "Users",
-          url: "#",
-        },
-        {
-          title: "Roles",
-          url: "#",
+          url: "/app/user",
         }
       ],
     },
