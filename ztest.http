@@ -11,6 +11,17 @@ Origin: {{baseUrl}}
   "password": "password123"
 }
 
+### Register user cf
+POST https://cf-book.eci4ever.workers.dev/api/auth/sign-up/email
+Content-Type: application/json
+Origin: https://cf-book.eci4ever.workers.dev
+
+{
+  "name": "Test User 1",
+  "email": "test1@example.com",
+  "password": "password123"
+}
+
 ### Sign in user
 POST {{baseUrl}}/api/auth/sign-in/email
 Content-Type: application/json
