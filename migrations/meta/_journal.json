@@ -8,6 +8,13 @@
       "when": 1778839062993,
       "tag": "0000_lively_stellaris",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1778893636908,
+      "tag": "0001_far_shinko_yamashiro",
+      "breakpoints": true
     }
   ]
 }
