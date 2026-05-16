@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Github, GalleryVerticalEnd, Search, Plus } from 'lucide-react';
+import { GalleryVerticalEnd, Search, Plus } from 'lucide-react';
 
 export const Route = createFileRoute('/')({ component: Home })
 
@@ -31,18 +31,6 @@ function Home() {
             <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
               Components
             </a>
-            <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
-              Blocks
-            </a>
-            <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
-              Charts
-            </a>
-            <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
-              Directory
-            </a>
-            <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
-              Create
-            </a>
           </div>
         </div>
 
@@ -61,36 +49,6 @@ function Home() {
           {/* Divider */}
           <div className="hidden h-6 w-px bg-border sm:block" />
 
-          {/* GitHub Stars */}
-          <a
-            href="#"
-            className="hidden items-center gap-2 text-sm font-medium text-foreground transition-colors hover:text-muted-foreground sm:flex"
-          >
-            <Github className="h-4 w-4" />
-            <span>114k</span>
-          </a>
-
-          {/* Divider */}
-          <div className="hidden h-6 w-px bg-border sm:block" />
-
-          {/* Theme Toggle (placeholder - moon icon) */}
-          <button className="rounded-md p-1 transition-colors hover:bg-muted">
-            <svg
-              className="h-4 w-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
-          </button>
-
-          {/* Divider */}
-          <div className="hidden h-6 w-px bg-border sm:block" />
-
           {/* New Button */}
           <Button asChild className="h-9 gap-1.5 px-4 text-sm font-medium">
             <Link to="/login">
@@ -103,24 +61,6 @@ function Home() {
 
       {/* Hero Section */}
       <main className="flex flex-col items-center justify-center px-4 pb-16 pt-28 text-center">
-        {/* Badge */}
-        <a
-          href="#"
-          className="mb-8 inline-flex items-center gap-1.5 rounded-full bg-muted px-4 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-        >
-          New preset commands
-          <svg
-            className="h-3.5 w-3.5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </a>
 
         {/* Heading */}
         <h1 className="mb-5 max-w-3xl text-4xl font-semibold leading-tight text-foreground">

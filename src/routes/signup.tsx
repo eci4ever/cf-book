@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { AuthShell } from '@/components/auth/auth-shell'
 import { SignupForm } from '@/components/auth/signup-form';
+import { GalleryVerticalEnd, Link } from 'lucide-react';
 
 export const Route = createFileRoute('/signup')({
     component: RouteComponent,
@@ -8,8 +8,19 @@ export const Route = createFileRoute('/signup')({
 
 function RouteComponent() {
     return (
-        <AuthShell>
-            <SignupForm />
-        </AuthShell>
+        <main className="flex min-h-svh flex-col items-center justify-center bg-muted px-6 py-10">
+            <div className="flex w-full max-w-sm flex-col gap-6">
+                <Link
+                    to="/"
+                    className="flex items-center gap-2 self-center text-sm font-semibold leading-none text-foreground"
+                >
+                    <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                        <GalleryVerticalEnd className="size-4" aria-hidden="true" />
+                    </span>
+                    <span>ADTEC JTM.</span>
+                </Link>
+                <SignupForm />
+            </div>
+        </main>
     )
 }
