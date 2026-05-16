@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, useLocation, useNavigate } from '@tanstack/react-router'
 import { AppSidebar } from "@/components/app-sidebar"
 import {
     Breadcrumb,
@@ -18,7 +18,13 @@ import { getCurrentSession } from '#/lib/session'
 import { Button } from '#/components/ui/button'
 import { LogOut } from 'lucide-react'
 import { authClient } from '#/lib/auth-client'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
+
+const breadcrumbLabels: Record<string, string> = {
+    "/app": "Dashboard",
+    "/app/book": "Library",
+    "/app/user": "Users",
+}
 
 export const Route = createFileRoute('/app')({
     beforeLoad: async () => {
@@ -39,8 +45,10 @@ export const Route = createFileRoute('/app')({
 function RouteComponent() {
 
     const navigate = useNavigate()
+    const location = useLocation()
     const { session } = Route.useRouteContext()
     const [isSigningOut, setIsSigningOut] = useState(false)
+    const breadcrumbs = getBreadcrumbs(location.pathname)
 
     async function handleLogout() {
         setIsSigningOut(true)
@@ -66,15 +74,24 @@ function RouteComponent() {
                         />
                         <Breadcrumb>
                             <BreadcrumbList>
-                                <BreadcrumbItem className="hidden md:block">
-                                    <BreadcrumbLink href="#">
-                                        Build Your Application
-                                    </BreadcrumbLink>
-                                </BreadcrumbItem>
-                                <BreadcrumbSeparator className="hidden md:block" />
-                                <BreadcrumbItem>
-                                    <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                                </BreadcrumbItem>
+                                {breadcrumbs.map((breadcrumb, index) => {
+                                    const isCurrentPage = index === breadcrumbs.length - 1
+
+                                    return (
+                                        <Fragment key={breadcrumb.href}>
+                                            {index > 0 ? <BreadcrumbSeparator /> : null}
+                                            <BreadcrumbItem>
+                                                {isCurrentPage ? (
+                                                    <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
+                                                ) : (
+                                                    <BreadcrumbLink href={breadcrumb.href}>
+                                                        {breadcrumb.label}
+                                                    </BreadcrumbLink>
+                                                )}
+                                            </BreadcrumbItem>
+                                        </Fragment>
+                                    )
+                                })}
                             </BreadcrumbList>
                         </Breadcrumb>
                     </div>
@@ -101,4 +118,27 @@ function RouteComponent() {
             </SidebarInset>
         </SidebarProvider>
     )
+}
+
+function getBreadcrumbs(pathname: string) {
+    const segments = pathname.split("/").filter(Boolean)
+    const appIndex = segments.indexOf("app")
+    const appSegments = appIndex >= 0 ? segments.slice(appIndex) : segments
+
+    return appSegments.map((segment, index) => {
+        const href = `/${appSegments.slice(0, index + 1).join("/")}`
+
+        return {
+            href,
+            label: breadcrumbLabels[href] ?? formatBreadcrumbLabel(segment),
+        }
+    })
+}
+
+function formatBreadcrumbLabel(segment: string) {
+    return segment
+        .split("-")
+        .filter(Boolean)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
 }
