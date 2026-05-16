@@ -22,6 +22,7 @@ const data = {
     name: "Eci M",
     email: "eci@example.com",
     image: "/avatars/shadcn.jpg",
+    role: "user"
   },
   navMain: [
     {
@@ -66,7 +67,23 @@ const data = {
   ]
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+type AppSidebarSession = {
+  user: {
+    name?: string | null
+    email?: string | null
+    image?: string | null
+    role?: string | null
+  }
+}
+
+export function AppSidebar({ session, ...props }: React.ComponentProps<typeof Sidebar> & { session: AppSidebarSession }) {
+  const user = {
+    name: session.user.name ?? "",
+    email: session.user.email ?? "",
+    image: session.user.image ?? "",
+    role: session.user.role ?? "",
+  }
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -90,7 +107,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
   )

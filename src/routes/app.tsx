@@ -39,7 +39,7 @@ export const Route = createFileRoute('/app')({
 function RouteComponent() {
 
     const navigate = useNavigate()
-    // const { session } = Route.useRouteContext()
+    const { session } = Route.useRouteContext()
     const [isSigningOut, setIsSigningOut] = useState(false)
 
     async function handleLogout() {
@@ -55,7 +55,7 @@ function RouteComponent() {
 
     return (
         <SidebarProvider>
-            <AppSidebar />
+            <AppSidebar session={session} />
             <SidebarInset>
                 <header className="flex h-16 shrink-0 items-center gap-2">
                     <div className="flex items-center gap-2 px-4">
