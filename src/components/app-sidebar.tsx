@@ -25,6 +25,7 @@ const data = {
       url: "#",
       icon: SquareTerminal,
       isActive: true,
+      adminOnly: true,
       items: [
         {
           title: "Users",
@@ -63,6 +64,9 @@ export function AppSidebar({ session, ...props }: React.ComponentProps<typeof Si
     image: session.user.image ?? "",
     role: session.user.role ?? "",
   }
+  const navMain = data.navMain.filter((item) => {
+    return user.role === "admin" || !item.adminOnly
+  })
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -84,7 +88,7 @@ export function AppSidebar({ session, ...props }: React.ComponentProps<typeof Si
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />
