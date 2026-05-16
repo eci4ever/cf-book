@@ -5,6 +5,7 @@ import { admin } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { createDb } from "@/db";
 import * as schema from "@/db/schema";
+import bcrypt from "bcryptjs";
 
 const db = createDb(env.DB);
 
@@ -15,6 +16,14 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    password: {
+      hash: async (password) => {
+        return await bcrypt.hash(password, 10);
+      },
+      verify: async ({ hash, password }) => {
+        return await bcrypt.compare(password, hash);
+      },
+    },
   },
   cookies: tanstackStartCookies(),
 
