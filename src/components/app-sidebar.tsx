@@ -16,52 +16,36 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { Link } from "@tanstack/react-router"
 
 const data = {
-  user: {
-    name: "Eci M",
-    email: "eci@example.com",
-    image: "/avatars/shadcn.jpg",
-    role: "user"
-  },
   navMain: [
     {
-      title: "Playground",
+      title: "Admin",
       url: "#",
       icon: SquareTerminal,
       isActive: true,
       items: [
         {
-          title: "History",
+          title: "Users",
           url: "#",
         },
         {
-          title: "Starred",
+          title: "Roles",
           url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
+        }
       ],
     },
     {
-      title: "Models",
+      title: "Books",
       url: "#",
       icon: Bot,
+      isActive: true,
       items: [
         {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
+          title: "Library",
+          url: "/app/book",
+        }
       ],
     }
   ]
@@ -90,7 +74,7 @@ export function AppSidebar({ session, ...props }: React.ComponentProps<typeof Si
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <Link to="/app">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <Command className="size-4" />
                 </div>
@@ -98,7 +82,7 @@ export function AppSidebar({ session, ...props }: React.ComponentProps<typeof Si
                   <span className="truncate font-medium">Acme Inc</span>
                   <span className="truncate text-xs">Enterprise</span>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

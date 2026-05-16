@@ -45,7 +45,7 @@ import {
 } from "#/feature/book/book.function";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/book/")({
+export const Route = createFileRoute("/app/book")({
   component: BooksPage,
 });
 
