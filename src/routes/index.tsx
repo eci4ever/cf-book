@@ -25,12 +25,12 @@ function Home() {
 
           {/* Nav Links */}
           <div className="hidden items-center gap-6 md:flex">
-            <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
+            <Link to="/" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
               Docs
-            </a>
-            <a href="#" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
+            </Link>
+            <Link to="/" className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground">
               Components
-            </a>
+            </Link>
           </div>
         </div>
 
