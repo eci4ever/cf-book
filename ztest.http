@@ -1,0 +1,32 @@
+@baseUrl = http://localhost:3000
+
+### Register user
+POST {{baseUrl}}/api/auth/sign-up/email
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "name": "Test User 1",
+  "email": "test1@example.com",
+  "password": "password123"
+}
+
+### Sign in user
+POST {{baseUrl}}/api/auth/sign-in/email
+Content-Type: application/json
+Origin: {{baseUrl}}
+
+{
+  "email": "test1@example.com",
+  "password": "password123"
+}
+
+### Test Auth Session
+GET http://localhost:3000/api/auth/get-session
+
+### Test Auth Session
+GET https://cf-book.eci4ever.workers.dev/api/auth/get-session
+
+### Test Sign Out
+POST {{baseUrl}}/api/auth/sign-out
+
